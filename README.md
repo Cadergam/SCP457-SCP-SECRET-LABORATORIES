@@ -1,4 +1,5 @@
-# SCP457-SCP-SECRET-LABORATORIES
+# SCP-457 for LabAPI
+
 A fully server-side SCP-457 plugin for **SCP: Secret Laboratory**, built with the official LabAPI framework.
 
 The plugin uses SCP-049-2 as the technical base role, replaces its visible role information with **SCP-457**, adds fire-based attacks and introduces portable fire extinguishers that can contain SCP-457. Players do not need to download any client mod or custom asset.
@@ -12,10 +13,15 @@ The plugin uses SCP-049-2 as the technical base role, replaces its visible role 
 - `Fire Burst` ability ignites every human inside a configurable radius.
 - Abilities use SCP:SL Server-Specific Settings and configurable keybinds.
 - Server-side portable fire extinguishers.
-- A special flashlight acts as the extinguisher inventory item.
-- A small red 3D extinguisher model follows the holder's right-hand bone.
-- If the humanoid hand bone is unavailable, the model uses a safe fallback position near the right hand.
-- Improved SCP-457 detection: the aimed target is preferred, otherwise the nearest SCP-457 inside the configured range is selected.
+- Extinguishers are fully virtual: no coin, flashlight or other vanilla item is added to the inventory.
+- No hidden support item can appear in the holder's hand.
+- A small red 3D extinguisher model uses a reliable server-side anchor near the holder's right hand.
+- The model position can be adjusted through the configuration.
+- The model position can be adjusted with `ExtinguisherHandAnchorX`, `ExtinguisherHandAnchorY`, `ExtinguisherHandAnchorZ` and `ExtinguisherHandRotationZ`.
+- The model size can be adjusted with `ExtinguisherHandScale`.
+- Legacy `ExtinguisherModel*` values are ignored so stale LabAPI configuration cannot move the model back to its old position.
+- Virtual extinguishers cannot be dropped or thrown and are removed on death, role change or disconnect.
+- Strict targeting requires SCP-457 to be directly inside a 6-degree aiming cone. Targets standing to the side are never selected automatically.
 - No client download is required.
 
 ## Default gameplay values
@@ -29,6 +35,7 @@ The plugin uses SCP-049-2 as the technical base role, replaces its visible role 
 | Fire Burst radius | 6 metres |
 | Fire Burst cooldown | 25 seconds |
 | Extinguisher range | 10 metres |
+| Extinguisher aiming angle | 6 degrees |
 | Extinguisher charges | 8 |
 | Fire intensity removed per hit | 20% |
 | Successful hits required to extinguish SCP-457 | 5 |
@@ -49,14 +56,14 @@ Command aliases:
 
 ## Using the extinguisher
 
-1. An administrator gives the item with `extincteur <PlayerID>`.
-2. The player equips the special flashlight received from the command.
+1. An administrator activates the virtual extinguisher with `extincteur <PlayerID>`.
+2. No inventory item needs to be equipped.
 3. The player configures `Spray the extinguisher` in Server-Specific Settings. The suggested key is `H`.
 4. The player stays within 10 metres of SCP-457 and presses the configured key.
 5. Each successful spray removes 20% of SCP-457's fire intensity.
 6. SCP-457 is extinguished after five successful sprays.
 
-A normal flashlight is not treated as an extinguisher. Extinguisher serial numbers are tracked by the server.
+SCP-457 must remain directly inside the crosshair. The plugin does not select a nearby SCP-457 standing to the side. Charges are tracked directly per player, without creating a vanilla inventory item.
 
 ## Requirements
 
@@ -106,8 +113,8 @@ Scp457/bin/Release/net48/Scp457.dll
 
 The plugin adds an `SCP-457 - Abilities` section containing:
 
-- `SCP-457 Fire Burst` 
-- `Spray the extinguisher` 
+- `SCP-457 Fire Burst` — suggested key: `G`
+- `Spray the extinguisher` — suggested key: `H`
 
 The strings shown in-game are currently written in French in the source code and can be translated directly in `Scp457ServerSpecificSettings.cs` and `Plugin.cs`.
 
@@ -115,7 +122,7 @@ The strings shown in-game are currently written in French in the source code and
 
 SCP:SL does not provide a native `RoleTypeId.Scp457`. The plugin therefore uses `RoleTypeId.Scp0492` internally. The role name is replaced while aiming at the player, but some unmodified client screens may still display `SCP-049-2`.
 
-The extinguisher is also assembled from native server-side primitives and uses a flashlight as its inventory item. This keeps the plugin completely server-side.
+The extinguisher is assembled from native server-side primitives. Its charges and ownership are tracked virtually by the server, so no coin, flashlight or other vanilla item is visible in the hand.
 
 ## Project structure
 
@@ -135,4 +142,3 @@ Scp457/
 ## Author
 
 Created by **Cadergam**.
-
